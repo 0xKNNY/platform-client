@@ -1,4 +1,5 @@
 import DesignerContext from "@/context/DesignerContext";
+import useThemeURL from "@/hooks/theme/useThemeURL";
 import {
   ReactNode,
   useCallback,
@@ -16,6 +17,10 @@ export const DesignerPreviewWrapper = ({
   children: ReactNode;
 }) => {
   const { data: designerData } = DesignerContext.useContainer();
+  const themeURL = useThemeURL({
+    theme: designerData?.themeURL,
+    remoteEntry: false,
+  });
   const [mountNode, setMountNode] = useState<HTMLElement | undefined>();
   const iframeMutableRef = useRef<HTMLIFrameElement>();
 
@@ -38,17 +43,17 @@ export const DesignerPreviewWrapper = ({
       //Inject built styles into the iframe
       const head = iframeRef.contentWindow?.document?.head!;
       const link = document.createElement("link");
-      link.href = `${
-        designerData?.themeURL || process.env.NEXT_PUBLIC_BASE_THEME_URL
-      }/index.css`;
+
+      link.href = `${themeURL}/index.css`;
       link.rel = "stylesheet";
       link.type = "text/css";
+
       head.appendChild(link);
 
       //Set iframe node to be used with portal
       setMountNode(iframeRef.contentWindow?.document?.body);
     });
-  }, [designerData?.themeURL]);
+  }, [themeURL]);
 
   const portal = useMemo(() => {
     if (!mountNode) return <Fragment />;
